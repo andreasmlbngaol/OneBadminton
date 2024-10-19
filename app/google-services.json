@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "873008080759",
+    "firebase_url": "https://one-badminton-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "one-badminton",
+    "storage_bucket": "one-badminton.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:873008080759:android:c0108250573d49983c2372",
+        "android_client_info": {
+          "package_name": "com.mightysana.onebadminton"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWVA4XO-U2sNaFaIs57xuRwMLPMKSuXOU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

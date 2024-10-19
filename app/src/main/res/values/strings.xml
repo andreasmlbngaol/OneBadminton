@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">One Badminton</string>
+    <string name="no_leagues">No Leagues Found</string>
+    <string name="league_name_empty">League name cannot be empty!</string>
+    <string name="add_league">Create New League</string>
+    <string name="league_name_label">League Name</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
+    <string name="add_player">Add Player</string>
+    <string name="matches_navbar">Matches</string>
+    <string name="leaderboard_navbar">Leaderboard</string>
+    <string name="random_pair_navbar">Randomize</string>
+    <string name="no_matches">No Matches Found</string>
+    <string name="redirect_to_randomize">Click Here to Generate Couple!</string>
+    <string name="no_players">No Players Found</string>
+    <string name="redirect_to_add_player">Click Here to Add Player!</string>
+    <string name="press_add_player">Click Button Below or Here to Add Player!</string>
+</resources>
