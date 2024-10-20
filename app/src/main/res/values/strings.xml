@@ -8,7 +8,7 @@
     <string name="cancel">Cancel</string>
     <string name="add_player">Add Player</string>
     <string name="matches">Matches</string>
-    <string name="leaderbord">Leaderboard</string>
+    <string name="leaderboard">Leaderboard</string>
     <string name="player">Player</string>
     <string name="no_matches">No Matches Found</string>
     <string name="redirect_to_randomize">Click Here to Generate Double!</string>
@@ -16,9 +16,8 @@
     <string name="redirect_to_add_player">Click Here to Add Player!</string>
     <string name="press_add_player">Click Button Below or Here to Add Player!</string>
     <string name="player_name_empty">Player name can\'t be empty!</string>
-    <string name="player_name_too_long">Player name can\'t be longer than 30 characters!</string>
     <string name="player_initial_empty">Player initial can\'t be empty!</string>
-    <string name="player_initial_too_long">Player initial cannot be longer than 3 characters!</string>
+    <string name="player_initial_too_long">Player initial can\'t be longer than 3 characters!</string>
     <string name="player_name_label">Player Name</string>
     <string name="player_initial_label">Initial</string>
     <string name="generate_double">Generate Doubles</string>
@@ -29,4 +28,5 @@
     <string name="score_conceded">SC</string>
     <string name="points" translatable="false">P</string>
     <string name="player_added">Player\'s Added!</string>
+    <string name="player_name_too_long">Player name can\'t be longer than 20 characters!</string>
 </resources>

@@ -27,7 +27,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -45,14 +44,13 @@ import androidx.navigation.NavController
 import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.composable.TextTopBar
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     navController: NavController,
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val leagues by viewModel.leagues.collectAsState()
-    var openDialog by remember { mutableStateOf(false) }
+    val isDialogVisible by viewModel.isDialogVisible.collectAsState()
 
     Scaffold(
         topBar = {
@@ -66,9 +64,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = {
-                    openDialog = true
-                }
+                onClick = { viewModel.showDialog() }
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
@@ -99,9 +95,7 @@ fun HomeScreen(
                         ),
                         shape = MaterialTheme.shapes.medium,
                         modifier = Modifier
-                            .clickable {
-                                navController.navigate("league/${it.first}")
-                            }
+                            .clickable { navController.navigate("league/${it.first}") }
                             .fillMaxWidth(0.9f)
                     ) {
                         Column(
@@ -114,7 +108,6 @@ fun HomeScreen(
                                 modifier = Modifier.padding(top = 8.dp),
                                 style = MaterialTheme.typography.titleLarge
                             )
-
                             Text(
                                 text = "id: ${it.first}",
                                 modifier = Modifier.padding(bottom = 8.dp),
@@ -126,68 +119,18 @@ fun HomeScreen(
                 }
             }
         }
-        AnimatedVisibility(openDialog) {
+        AnimatedVisibility(isDialogVisible) {
             val errorMessage = stringResource(R.string.league_name_empty)
             AddLeagueDialog(
-                onDismiss = { openDialog = false },
+                onDismiss = { viewModel.dismissDialog() },
+                viewModel = viewModel,
                 onSave = { leagueName ->
                     if(leagueName.isNotBlank()) {
                         viewModel.addLeague(leagueName)
-                        openDialog = false
-                    } else {
-                        Toast.makeText(navController.context, errorMessage, Toast.LENGTH_SHORT).show()
-                    }
+                        viewModel.dismissDialog()
+                    } else { Toast.makeText(navController.context, errorMessage, Toast.LENGTH_SHORT).show() }
                 }
             )
         }
     }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AddLeagueDialog(
-    onDismiss: () -> Unit,
-    onSave: (String) -> Unit
-) {
-    var leagueName by remember { mutableStateOf("") }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = {
-            Text(stringResource(R.string.add_league))
-        },
-        text = {
-            OutlinedTextField(
-                value = leagueName,
-                onValueChange = { leagueName = it },
-                modifier = Modifier.fillMaxWidth(),
-                label = { Text(stringResource(R.string.league_name_label)) },
-                singleLine = true,
-                keyboardActions = KeyboardActions(
-                    onDone = { onSave(leagueName) }
-                )
-            )
-        },
-        confirmButton = {
-            TextButton(
-                onClick = { onSave(leagueName) },
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text(stringResource(R.string.save), color = MaterialTheme.colorScheme.onPrimary)
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismiss,
-                colors = ButtonDefaults.buttonColors().copy(
-                    containerColor = MaterialTheme.colorScheme.error
-                )
-            ) {
-                Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onError)
-            }
-        }
-    )
 }

@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.ButtonDefaults
@@ -45,9 +47,7 @@ fun AddPlayerDialog(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         dragHandle = {
-            IconButton(
-                onClick = onDismiss
-            ) {
+            IconButton(onClick = onDismiss) {
                 Icon(
                     Icons.Default.KeyboardArrowDown,
                     contentDescription = null,
@@ -57,17 +57,16 @@ fun AddPlayerDialog(
         }
     ) {
         Surface(
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(R.string.add_player),
                     style = MaterialTheme.typography.titleLarge,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-
                 OutlinedTextField(
                     shape = MaterialTheme.shapes.medium,
                     value = playerName,
@@ -80,6 +79,12 @@ fun AddPlayerDialog(
                         AnimatedVisibility(!viewModel.isNameLengthValid()) {
                             Text(stringResource(R.string.player_name_too_long))
                         }
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { viewModel.resetName() },
+                            enabled = !viewModel.isNameBlank()
+                        ) { Icon(Icons.Default.Clear, contentDescription = null) }
                     }
                 )
                 OutlinedTextField(
@@ -94,9 +99,15 @@ fun AddPlayerDialog(
                         AnimatedVisibility(!viewModel.isInitialLengthValid()) {
                             Text(stringResource(R.string.player_initial_too_long))
                         }
-                    }
+                    },
+                    trailingIcon = {
+                        IconButton(
+                            onClick = { viewModel.resetInitial() },
+                            enabled = !viewModel.isInitialBlank()
+                        ) { Icon(Icons.Default.Clear, contentDescription = null) }
+                    },
+                    keyboardActions = KeyboardActions(onDone = { onSave(playerName, playerInitial) })
                 )
-                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier.fillMaxWidth()
@@ -107,12 +118,8 @@ fun AddPlayerDialog(
                             containerColor = MaterialTheme.colorScheme.error,
                             contentColor = MaterialTheme.colorScheme.onError
                         )
-                    ) {
-                        Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onError)
-                    }
-
+                    ) { Text(stringResource(R.string.cancel), color = MaterialTheme.colorScheme.onError) }
                     Spacer(modifier = Modifier.width(8.dp))
-
                     TextButton(
                         onClick = { onSave(playerName, playerInitial) },
                         colors = ButtonDefaults.buttonColors().copy(

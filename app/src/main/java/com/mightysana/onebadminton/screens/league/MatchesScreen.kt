@@ -40,10 +40,10 @@ fun MatchesScreen(
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             items(matches) { match ->
-                val player1 = match.couple1.player1
-                val player2 = match.couple1.player2
-                val player3 = match.couple2.player1
-                val player4 = match.couple2.player2
+                val player1 = match.doubles1.player1
+                val player2 = match.doubles1.player2
+                val player3 = match.doubles2.player1
+                val player4 = match.doubles2.player2
                 Text("$player1 & $player2 vs $player3 & $player4")
             }
         }

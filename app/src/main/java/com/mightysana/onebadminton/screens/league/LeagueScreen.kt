@@ -1,42 +1,21 @@
 package com.mightysana.onebadminton.screens.league
 
-import android.content.Context
-import android.widget.Toast
-import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.automirrored.outlined.List
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
@@ -46,13 +25,8 @@ import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.composable.AddFloatingActionButton
 import com.mightysana.onebadminton.composable.BackTextTopBar
 import com.mightysana.onebadminton.composable.BottomNavBar
+import com.mightysana.onebadminton.composable.BottomNavBarItem
 import com.mightysana.onebadminton.navigateAndPopUp
-import com.mightysana.onebadminton.properties.League
-import com.mightysana.onebadminton.properties.Match
-import com.mightysana.onebadminton.properties.Player
-import com.mightysana.onebadminton.properties.Table
-import com.mightysana.onebadminton.properties.TableColumn
-import com.mightysana.onebadminton.properties.TableData
 import com.mightysana.onebadminton.screens.league.player_screen.PlayerScreen
 
 @Composable
@@ -69,6 +43,10 @@ fun LeagueScreen(
     val selectedTab by viewModel.selectedTab.collectAsState()
     val contentController = rememberNavController()
 
+    val matchesRoute = "matches"
+    val leaderboardRoute = "leaderboard"
+    val playerRoute = "player"
+
     Scaffold(
         topBar = {
             BackTextTopBar(
@@ -78,9 +56,30 @@ fun LeagueScreen(
             )
         },
         bottomBar = {
+            val tabs = listOf(
+                BottomNavBarItem(
+                    selectedIcon = Icons.Filled.DateRange,
+                    unselectedIcon = Icons.Outlined.DateRange,
+                    labelResId = R.string.matches,
+                    route = matchesRoute
+                ),
+                BottomNavBarItem(
+                    selectedIcon = Icons.AutoMirrored.Filled.List,
+                    unselectedIcon = Icons.AutoMirrored.Outlined.List,
+                    labelResId = R.string.leaderboard,
+                    route = leaderboardRoute
+                ),
+                BottomNavBarItem(
+                    selectedIcon = Icons.Filled.Person,
+                    unselectedIcon = Icons.Outlined.Person,
+                    labelResId = R.string.player,
+                    route = playerRoute
+                )
+            )
             BottomNavBar(
                 selectedTab = selectedTab,
                 navController = contentController,
+                tabs = tabs,
             ) { viewModel.setSelectedTab(it) }
         },
         floatingActionButton = {
@@ -91,51 +90,34 @@ fun LeagueScreen(
     ) { paddingValues ->
         NavHost(
             navController = contentController,
-            startDestination = MATCHES,
+            startDestination = matchesRoute,
             modifier = Modifier.padding(paddingValues)
         ) {
-            composable(MATCHES) {
+            composable(matchesRoute) {
                 MatchesScreen(league = league) {
                     viewModel.setSelectedTab(2)
-                    contentController.navigateAndPopUp(PLAYER, MATCHES)
+                    contentController.navigateAndPopUp(playerRoute, matchesRoute)
                 }
             }
-            composable(LEADERBOARD) {
+            composable(leaderboardRoute) {
                  LeaderboardScreen(players = league.players) {
                      viewModel.setSelectedTab(2)
-                     contentController.navigateAndPopUp(PLAYER, LEADERBOARD)
+                     contentController.navigateAndPopUp(playerRoute, leaderboardRoute)
                  }
             }
-            composable(PLAYER) {
+            composable(playerRoute) {
                 PlayerScreen(
                     league = league,
                     viewModel = viewModel,
                     onDismissDialog = { viewModel.dismissAddPlayerDialog() },
                     onAddPlayer = { viewModel.showAddPlayerDialog() },
-                    onRandomize = { }
+                    onRandomize = {
+                        viewModel.generateMatches(league.players)
+                        viewModel.setSelectedTab(0)
+                        contentController.navigateAndPopUp(matchesRoute, playerRoute)
+                    }
                 )
             }
         }
     }
-}
-
-const val MATCHES = "matches"
-const val LEADERBOARD = "leaderboard"
-const val PLAYER = "player"
-
-val TABS = listOf(
-    MATCHES,
-    LEADERBOARD,
-    PLAYER
-)
-
-fun Context.toastMessage(
-    @StringRes message: Int,
-    duration: Int = Toast.LENGTH_SHORT
-) {
-    Toast.makeText(
-        this,
-        this.getString(message),
-        duration
-    ).show()
 }

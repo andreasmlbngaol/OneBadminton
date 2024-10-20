@@ -7,7 +7,7 @@
     <string name="cancel">Batal</string>
     <string name="add_player">Tambah Pemain</string>
     <string name="matches">Pertandingan</string>
-    <string name="leaderbord">Klasemen</string>
+    <string name="leaderboard">Klasemen</string>
     <string name="player">Pemain</string>
     <string name="no_matches">Belum Ada Pertandingan</string>
     <string name="redirect_to_randomize">Klik Disini Untuk Menentukan Pasangan!</string>
@@ -15,7 +15,7 @@
     <string name="redirect_to_add_player">Klik Disini Untuk Menambah Pemain</string>
     <string name="press_add_player">Klik Tombol di bawah Untuk Menambah Pemain!</string>
     <string name="player_name_empty">Nama pemain tidak boleh kosong!</string>
-    <string name="player_name_too_long">Nama pemain tidak boleh lebih dari 30 karakter!</string>
+    <string name="player_name_too_long">Nama pemain tidak boleh lebih dari 20 karakter!</string>
     <string name="player_initial_empty">Inisial pemain tidak boleh kosong</string>
     <string name="player_initial_too_long">Inisial pemain tidak boleh lebih dari 3 karakter</string>
     <string name="player_name_label">Nama Pemain</string>

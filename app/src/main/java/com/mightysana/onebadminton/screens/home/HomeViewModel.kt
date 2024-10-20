@@ -18,6 +18,28 @@ class HomeViewModel @Inject constructor(
     private val _leagues = MutableStateFlow<Map<Int, League>>(emptyMap())
     val leagues: StateFlow<Map<Int, League>> = _leagues
 
+    private val _isDialogVisible = MutableStateFlow(false)
+    val isDialogVisible: StateFlow<Boolean> = _isDialogVisible
+
+    private val _leagueName = MutableStateFlow("")
+    val leagueName: StateFlow<String> = _leagueName
+
+    fun setLeagueName(name: String) {
+        _leagueName.value = name
+    }
+
+    private fun setDialogVisibility(isVisible: Boolean) {
+        _isDialogVisible.value = isVisible
+    }
+
+    fun showDialog() {
+        setDialogVisibility(true)
+    }
+
+    fun dismissDialog() {
+        setDialogVisibility(false)
+    }
+
     init {
         Log.d("HomeViewModel", "init called")  // Debug log
         fetchLeagues()

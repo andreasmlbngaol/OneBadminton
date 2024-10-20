@@ -3,8 +3,11 @@ package com.mightysana.onebadminton.screens.league
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mightysana.onebadminton.isOdd
 import com.mightysana.onebadminton.model.LeagueRepository
+import com.mightysana.onebadminton.properties.Doubles
 import com.mightysana.onebadminton.properties.League
+import com.mightysana.onebadminton.properties.Match
 import com.mightysana.onebadminton.properties.Player
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -39,11 +42,11 @@ class LeagueViewModel @Inject constructor(
         _initial.value = initial.uppercase()
     }
 
-    private fun resetName() {
+    fun resetName() {
         setName("")
     }
 
-    private fun resetInitial() {
+    fun resetInitial() {
         setInitial("")
     }
 
@@ -60,11 +63,11 @@ class LeagueViewModel @Inject constructor(
         return _initial.value.length <= 3
     }
 
-    private fun isNameBlank(): Boolean {
+    fun isNameBlank(): Boolean {
         return _name.value.isBlank()
     }
 
-    private fun isInitialBlank(): Boolean {
+    fun isInitialBlank(): Boolean {
         return _initial.value.isBlank()
     }
 
@@ -97,7 +100,6 @@ class LeagueViewModel @Inject constructor(
     suspend fun fetchLeague(id: Int) {
         _league.value = repository.getLeague(id)
         _league.value = _league.value.copy(players = _league.value.players.filterNotNull())
-        Log.d("LeagueViewModel", "Fetched league: ${_league.value}")
     }
 
     fun addPlayer(name: String, initial: String, leagueId: Int) {
@@ -108,15 +110,76 @@ class LeagueViewModel @Inject constructor(
             resetNameAndInitial()
             repository.addPlayer(newPlayer, leagueId)
             fetchLeague(leagueId)
-//            dismissAddPlayerDialog()
+        }
+    }
+
+    private fun randomizeDouble(players: List<Player>): List<Doubles> {
+        val shuffledPlayers = players.shuffled().toMutableList()
+        val playersCount = shuffledPlayers.size
+        val doubles = mutableListOf<Doubles>()
+
+        if(playersCount.isOdd()) {
+            val playerToPlayTwice = shuffledPlayers.random()
+            shuffledPlayers.add(playerToPlayTwice)
+        }
+
+        while (shuffledPlayers.isNotEmpty()) {
+            val player1 = shuffledPlayers.removeFirst()
+            val player2 = shuffledPlayers.removeFirst()
+            doubles.add(Doubles(player1, player2))
+        }
+        return doubles
+    }
+
+    fun generateMatches(players: List<Player>) {
+        viewModelScope.launch {
+            val doubles = randomizeDouble(players)
+            val shuffledDoubles = doubles.shuffled().toMutableList()
+            val doublesCount = shuffledDoubles.size
+            val matches = mutableListOf<Match>()
+
+            if (doublesCount.isOdd()) {
+                val enemies = shuffledDoubles.indices.associateWith { 0 }.toMutableMap()
+                var i = 0
+//                while(shuffledDoubles.isNotEmpty()) {
+                while(i < doublesCount) {
+                    val double1 = shuffledDoubles[i]
+                    var double2: Doubles
+                    var j = i
+                    while(enemies[i]!! < 2) {
+                        j++
+                        if(enemies[j] == 0 || i == doublesCount - 2) {
+                            double2 = shuffledDoubles[j]
+                            if(enemies[i] == 0) {
+                                matches.add(Match(double1, double2))
+                            } else {
+                                matches.add(Match(double2, double1))
+                            }
+                            enemies[i] = enemies[i]!! + 1
+                            enemies[j] = enemies[j]!! + 1
+                        }
+                    }
+                    Log.d("LeagueViewModel", "enemies: $enemies")
+//                    shuffledDoubles.removeAt(i)
+                    i++
+                }
+            } else {
+                while (shuffledDoubles.isNotEmpty()) {
+                    val doubles1 = shuffledDoubles.removeFirst()
+                    val doubles2 = shuffledDoubles.removeFirst()
+                    matches.add(Match(doubles1, doubles2))
+                }
+            }
+            fetchLeague(_league.value.id)
+            Log.d("LeagueViewModel", "Generated matches: $matches")
         }
     }
 }
 
 sealed class FormValidationResult {
-    object Valid : FormValidationResult()       // Jika form valid
-    object NameTooLong : FormValidationResult() // Jika name terlalu panjang
-    object NameIsBlank : FormValidationResult() // Jika name kosong
-    object InitialTooLong : FormValidationResult() // Jika initial terlalu panjang
-    object InitialIsBlank : FormValidationResult() // Jika initial kosong
+    data object Valid : FormValidationResult()       // Jika form valid
+    data object NameTooLong : FormValidationResult() // Jika name terlalu panjang
+    data object NameIsBlank : FormValidationResult() // Jika name kosong
+    data object InitialTooLong : FormValidationResult() // Jika initial terlalu panjang
+    data object InitialIsBlank : FormValidationResult() // Jika initial kosong
 }

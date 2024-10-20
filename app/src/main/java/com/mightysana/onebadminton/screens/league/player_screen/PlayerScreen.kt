@@ -26,7 +26,7 @@ import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.properties.League
 import com.mightysana.onebadminton.screens.league.FormValidationResult
 import com.mightysana.onebadminton.screens.league.LeagueViewModel
-import com.mightysana.onebadminton.screens.league.toastMessage
+import com.mightysana.onebadminton.toastMessage
 
 @Composable
 fun PlayerScreen(
@@ -49,9 +49,7 @@ fun PlayerScreen(
     ) {
         if (isPlayerEmpty) {
             Text(text = stringResource(R.string.no_players))
-            TextButton(
-                onClick = onAddPlayer
-            ) {
+            TextButton(onClick = onAddPlayer) {
                 Text(
                     text = stringResource(R.string.press_add_player),
                     textAlign = TextAlign.Center
@@ -74,7 +72,6 @@ fun PlayerScreen(
                 }
             }
         }
-
     }
 
     AnimatedVisibility(isDialogVisible) {

@@ -1,7 +1,7 @@
 package com.mightysana.onebadminton.properties
 
-data class Couple(
+data class Doubles(
     val player1: Player = Player(),
     val player2: Player = Player(),
-    val score: Int = 0
+//    val score: Int = 0
 )
