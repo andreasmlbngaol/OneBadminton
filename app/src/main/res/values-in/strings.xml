@@ -1,0 +1,29 @@
+<resources>
+    <string name="no_leagues">Belum Ada Liga</string>
+    <string name="league_name_empty">Nama liga tidak boleh kosong!</string>
+    <string name="add_league">Buat Liga</string>
+    <string name="league_name_label">Nama Liga</string>
+    <string name="save">Simpan</string>
+    <string name="cancel">Batal</string>
+    <string name="add_player">Tambah Pemain</string>
+    <string name="matches">Pertandingan</string>
+    <string name="leaderbord">Klasemen</string>
+    <string name="player">Pemain</string>
+    <string name="no_matches">Belum Ada Pertandingan</string>
+    <string name="redirect_to_randomize">Klik Disini Untuk Menentukan Pasangan!</string>
+    <string name="no_players">Belum Ada Pemain</string>
+    <string name="redirect_to_add_player">Klik Disini Untuk Menambah Pemain</string>
+    <string name="press_add_player">Klik Tombol di bawah Untuk Menambah Pemain!</string>
+    <string name="player_name_empty">Nama pemain tidak boleh kosong!</string>
+    <string name="player_name_too_long">Nama pemain tidak boleh lebih dari 30 karakter!</string>
+    <string name="player_initial_empty">Inisial pemain tidak boleh kosong</string>
+    <string name="player_initial_too_long">Inisial pemain tidak boleh lebih dari 3 karakter</string>
+    <string name="player_name_label">Nama Pemain</string>
+    <string name="player_initial_label">Inisial</string>
+    <string name="name">Nama</string>
+    <string name="match_count">L</string>
+    <string name="score_scored">SM</string>
+    <string name="score_conceded">SK</string>
+    <string name="generate_double">Acak Pasangan</string>
+    <string name="player_added">Pemain Berhasil Ditambahkan!</string>
+</resources>

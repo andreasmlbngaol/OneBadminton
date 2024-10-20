@@ -38,10 +38,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mightysana.onebadminton.R
+import com.mightysana.onebadminton.composable.TextTopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,14 +56,12 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(R.string.app_name),
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
+            TextTopBar(
+                text = stringResource(R.string.app_name),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.titleLarge,
+                textDecoration = TextDecoration.Underline,
+                modifier = Modifier.fillMaxWidth()
             )
         },
         floatingActionButton = {

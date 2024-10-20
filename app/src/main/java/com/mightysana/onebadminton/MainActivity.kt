@@ -37,15 +37,10 @@ class MainActivity : ComponentActivity() {
                         navController = navController,
                         startDestination = HOME,
                     ) {
-                        composable(HOME) {
-                            HomeScreen(navController)
-                        }
-
+                        composable(HOME) { HomeScreen(navController) }
                         composable("$LEAGUE/{leagueId}") {
-                            val id = it.arguments?.getString("leagueId")?.toInt()
-                            if (id != null) {
-                                LeagueScreen(navController, id)
-                            }
+                            val id = it.arguments!!.getString("leagueId")!!.toInt()
+                            LeagueScreen(navController, id)
                         }
                     }
                 }
