@@ -177,9 +177,9 @@ class LeagueViewModel @Inject constructor(
 }
 
 sealed class FormValidationResult {
-    data object Valid : FormValidationResult()       // Jika form valid
-    data object NameTooLong : FormValidationResult() // Jika name terlalu panjang
-    data object NameIsBlank : FormValidationResult() // Jika name kosong
-    data object InitialTooLong : FormValidationResult() // Jika initial terlalu panjang
-    data object InitialIsBlank : FormValidationResult() // Jika initial kosong
+    data object Valid : FormValidationResult()
+    data object NameTooLong : FormValidationResult()
+    data object NameIsBlank : FormValidationResult()
+    data object InitialTooLong : FormValidationResult()
+    data object InitialIsBlank : FormValidationResult()
 }
