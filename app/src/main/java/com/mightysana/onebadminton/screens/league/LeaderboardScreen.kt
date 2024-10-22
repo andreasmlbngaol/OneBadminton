@@ -1,12 +1,10 @@
 package com.mightysana.onebadminton.screens.league
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -15,13 +13,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.properties.Player
-import com.mightysana.onebadminton.properties.Table
-import com.mightysana.onebadminton.properties.TableColumn
-import com.mightysana.onebadminton.properties.TableData
+import com.mightysana.onebadminton.composable.Table
+import com.mightysana.onebadminton.composable.TableColumn
+import com.mightysana.onebadminton.composable.TableData
 
 @Composable
 fun LeaderboardScreen(

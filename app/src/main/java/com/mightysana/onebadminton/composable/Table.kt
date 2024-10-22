@@ -1,4 +1,4 @@
-package com.mightysana.onebadminton.properties
+package com.mightysana.onebadminton.composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement

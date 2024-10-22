@@ -2,6 +2,7 @@ package com.mightysana.onebadminton.screens.league
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mightysana.onebadminton.isNull
 import com.mightysana.onebadminton.isOdd
 import com.mightysana.onebadminton.model.LeagueRepository
 import com.mightysana.onebadminton.properties.Doubles
@@ -108,6 +109,25 @@ class LeagueViewModel @Inject constructor(
         return _initial.value.isBlank()
     }
 
+    private fun isPlayerBlank(): Boolean {
+        return _player1.value.isNull() ||
+                _player2.value.isNull() ||
+                _player3.value.isNull() ||
+                _player4.value.isNull()
+    }
+
+    private fun isPlayerDuplicated(): Boolean {
+        val players = listOf(
+            _player1.value,
+            _player2.value,
+            _player3.value,
+            _player4.value,
+        )
+        return players.any { player ->
+            players.count { it == player } > 1
+        }
+    }
+
     fun validatePlayerForm(): PlayerFormValidationResult {
         return when {
             isNameBlank() -> PlayerFormValidationResult.NameIsBlank
@@ -119,10 +139,11 @@ class LeagueViewModel @Inject constructor(
     }
 
     fun validateMatchForm(): MatchFormValidationResult {
-//        return when {
-//            else -> MatchFormValidationResult.Valid
-//        }
-        return MatchFormValidationResult.Valid
+        return when {
+            isPlayerBlank() -> MatchFormValidationResult.PlayerIsBlank
+            isPlayerDuplicated() -> MatchFormValidationResult.PlayerDuplicate
+            else -> MatchFormValidationResult.Valid
+        }
     }
 
     private fun setShowAddPlayerDialog(show: Boolean) {
@@ -157,7 +178,10 @@ class LeagueViewModel @Inject constructor(
 
     suspend fun fetchLeague(id: Int) {
         _league.value = repository.getLeague(id)
-        _league.value = _league.value.copy(players = _league.value.players.filterNotNull())
+        _league.value = _league.value.copy(
+            players = _league.value.players.filterNotNull(),
+            matches = _league.value.matches.filterNotNull()
+        )
     }
 
     fun addPlayer() {
@@ -172,6 +196,22 @@ class LeagueViewModel @Inject constructor(
             resetNameAndInitial()
             repository.addPlayer(newPlayer, leagueId)
             fetchLeague(leagueId)
+        }
+    }
+
+    fun addMatch() {
+        viewModelScope.launch {
+            val leagueId = _league.value.id
+            val doubles1 = Doubles(_player1.value!!, _player2.value!!)
+            val doubles2 = Doubles(_player3.value!!, _player4.value!!)
+
+            val lastMatch = repository.getLastMatch(leagueId)
+            val newId = if(lastMatch != null) lastMatch.id + 1 else 1
+            val newMatch = Match(newId, doubles1, doubles2)
+            resetPlayer()
+            repository.addMatch(newMatch, leagueId)
+            fetchLeague(leagueId)
+            dismissAddMatchDialog()
         }
     }
 
@@ -216,6 +256,10 @@ class LeagueViewModel @Inject constructor(
                     val double1 = shuffledDoubles[i]
                     var double2: Doubles
                     var j = i
+
+                    val lastMatch = repository.getLastMatch(_league.value.id)
+                    val newId = if(lastMatch != null) lastMatch.id + 1 else 1
+
                     while (enemies[i]!! < 2) {
                         j++
                         if (j >= shuffledDoubles.size) break // Menghindari index out of bounds
@@ -234,9 +278,9 @@ class LeagueViewModel @Inject constructor(
                         }
 
                         if (enemies[i] == 0) {
-                            matches.add(Match(double1, double2))
+                            matches.add(Match(newId, double1, double2))
                         } else {
-                            matches.add(Match(double2, double1))
+                            matches.add(Match(newId, double2, double1))
                         }
 
                         enemies[i] = enemies[i]!! + 1
@@ -248,6 +292,9 @@ class LeagueViewModel @Inject constructor(
                 while (shuffledDoubles.isNotEmpty()) {
                     val doubles1 = shuffledDoubles.first()
                     val doubles2 = shuffledDoubles.elementAtOrNull(1)
+
+                    val lastMatch = repository.getLastMatch(_league.value.id)
+                    val newId = if(lastMatch != null) lastMatch.id + 1 else 1
 
                     if (doubles2 != null) {
                         // Pastikan tidak ada pemain yang melawan dirinya sendiri
@@ -261,7 +308,7 @@ class LeagueViewModel @Inject constructor(
 
                         shuffledDoubles.removeFirst()
                         shuffledDoubles.removeFirst()
-                        matches.add(Match(doubles1, doubles2))
+                        matches.add(Match(newId, doubles1, doubles2))
                     }
                 }
             }
@@ -297,6 +344,14 @@ class LeagueViewModel @Inject constructor(
         )
         return match1Double.any { it in match2Double }
     }
+
+    fun setMatchStatus(matchId: Int, newStatus: String) {
+        viewModelScope.launch {
+            val leagueId = _league.value.id
+            repository.setMatchStatus(leagueId, matchId, newStatus)
+            fetchLeague(_league.value.id)
+        }
+    }
 }
 
 sealed class PlayerFormValidationResult {
@@ -309,4 +364,10 @@ sealed class PlayerFormValidationResult {
 
 sealed class MatchFormValidationResult {
     data object Valid : MatchFormValidationResult()
+    data object PlayerIsBlank : MatchFormValidationResult()
+    data object PlayerDuplicate : MatchFormValidationResult()
 }
+
+val SCHEDULED = "SCHEDULED"
+val STARTED = "STARTED"
+val FINISHED = "FINISHED"

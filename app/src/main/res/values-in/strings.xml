@@ -27,4 +27,10 @@
     <string name="generate_double">Acak Pasangan</string>
     <string name="player_added">Pemain Berhasil Ditambahkan!</string>
     <string name="select_player">Pilih Pemain %1$d</string>
+    <string name="player_is_blank">Pilih Pemain Terlbih Dahulu!</string>
+    <string name="player_duplicate">Pemain Duplikat</string>
+    <string name="match_added">Pertandingan Berhasil Ditambahkan!</string>
+    <string name="start">Mulai</string>
+    <string name="finish">Selesai</string>
+    <string name="finished">Telah Selesai</string>
 </resources>

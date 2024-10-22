@@ -5,6 +5,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.database
 import com.mightysana.onebadminton.properties.League
+import com.mightysana.onebadminton.properties.Match
 import com.mightysana.onebadminton.properties.Player
 import kotlinx.coroutines.tasks.await
 import javax.inject.Inject
@@ -51,15 +52,43 @@ class LeagueRepository @Inject constructor() {
         }
     }
 
+    private suspend fun getMatches(leagueId: Int): List<Pair<Int, Match>> {
+        val snapshot =
+            database.child(leagueId.toString()).child("matches").get().await()  // Ambil snapshot
+        return snapshot.children.mapNotNull {
+            val match = it.getValue(Match::class.java)
+            if (match != null) {
+                Pair(it.key!!.toInt(), match)
+            } else {
+                null
+            }
+        }
+    }
+
     suspend fun getLastPlayer(leagueId: Int): Player? {
         val players = getPlayers(leagueId)
         Log.d("LeagueRepository", "Players: $players")
         return players.maxByOrNull { it.first }?.second
     }
 
+    suspend fun getLastMatch(leagueId: Int): Match? {
+        val matches = getMatches(leagueId)
+        return matches.maxByOrNull { it.first }?.second
+
+    }
+
     suspend fun addPlayer(player: Player, leagueId: Int) {
         val id = player.id
         database.child(leagueId.toString()).child("players").child(id.toString()).setValue(player).await()
+    }
+
+    suspend fun addMatch(match: Match, leagueId: Int) {
+        val id = match.id
+        database.child(leagueId.toString()).child("matches").child(id.toString()).setValue(match).await()
+    }
+
+    suspend fun setMatchStatus(leagueId: Int, matchId: Int, newStatus: String) {
+        database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("status").setValue(newStatus).await()
     }
 
 }

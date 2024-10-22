@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mightysana.onebadminton.R
+import com.mightysana.onebadminton.composable.LeagueCard
 import com.mightysana.onebadminton.composable.TextTopBar
 
 @Composable
@@ -88,33 +89,7 @@ fun HomeScreen(
                 }
             } else {
                 items(leagues.toList().reversed()) {
-                    Card(
-                        colors = CardDefaults.cardColors().copy(
-                            containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
-                        shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier
-                            .clickable { navController.navigate("league/${it.first}") }
-                            .fillMaxWidth(0.9f)
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            verticalArrangement = Arrangement.Center,
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Text(
-                                text = it.second.name,
-                                modifier = Modifier.padding(top = 8.dp),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                            Text(
-                                text = "id: ${it.first}",
-                                modifier = Modifier.padding(bottom = 8.dp),
-                                style = MaterialTheme.typography.titleMedium
-                            )
-                        }
-                    }
+                    LeagueCard(leaguePair = it,) { navController.navigate("league/${it.first}") }
                     Spacer(modifier = Modifier.height(8.dp))
                 }
             }
