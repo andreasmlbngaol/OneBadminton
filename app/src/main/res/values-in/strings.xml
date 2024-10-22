@@ -26,4 +26,5 @@
     <string name="score_conceded">SK</string>
     <string name="generate_double">Acak Pasangan</string>
     <string name="player_added">Pemain Berhasil Ditambahkan!</string>
+    <string name="select_player">Pilih Pemain %1$d</string>
 </resources>

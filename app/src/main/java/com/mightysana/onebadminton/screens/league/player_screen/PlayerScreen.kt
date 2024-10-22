@@ -23,20 +23,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
-import com.mightysana.onebadminton.properties.League
-import com.mightysana.onebadminton.screens.league.FormValidationResult
+import com.mightysana.onebadminton.composable.AddPlayerDialog
+import com.mightysana.onebadminton.screens.league.PlayerFormValidationResult
 import com.mightysana.onebadminton.screens.league.LeagueViewModel
 import com.mightysana.onebadminton.toastMessage
 
 @Composable
 fun PlayerScreen(
-    league: League,
+    viewModel: LeagueViewModel,
     onRandomize: () -> Unit,
     onDismissDialog: () -> Unit,
-    viewModel: LeagueViewModel,
     onAddPlayer: () -> Unit
 ) {
     val context = LocalContext.current
+    val league by viewModel.league.collectAsState()
     val isDialogVisible by viewModel.showAddPlayerDialog.collectAsState()
     val leagueId = league.id
     val players = league.players.sortedBy { it.name }
@@ -78,16 +78,16 @@ fun PlayerScreen(
         AddPlayerDialog(
             onDismiss = onDismissDialog,
             viewModel = viewModel
-        ) { name, initial ->
-            when (viewModel.validateForm()) {
-                FormValidationResult.Valid -> {
-                    viewModel.addPlayer(name, initial, leagueId)
+        ) {
+            when (viewModel.validatePlayerForm()) {
+                PlayerFormValidationResult.Valid -> {
+                    viewModel.addPlayer()
                     context.toastMessage(R.string.player_added)
                 }
-                FormValidationResult.NameIsBlank -> { context.toastMessage(R.string.player_name_empty) }
-                FormValidationResult.NameTooLong -> { context.toastMessage(R.string.player_name_too_long) }
-                FormValidationResult.InitialIsBlank -> { context.toastMessage(R.string.player_initial_empty) }
-                FormValidationResult.InitialTooLong -> { context.toastMessage(R.string.player_initial_too_long) }
+                PlayerFormValidationResult.NameIsBlank -> { context.toastMessage(R.string.player_name_empty) }
+                PlayerFormValidationResult.NameTooLong -> { context.toastMessage(R.string.player_name_too_long) }
+                PlayerFormValidationResult.InitialIsBlank -> { context.toastMessage(R.string.player_initial_empty) }
+                PlayerFormValidationResult.InitialTooLong -> { context.toastMessage(R.string.player_initial_too_long) }
             }
         }
     }

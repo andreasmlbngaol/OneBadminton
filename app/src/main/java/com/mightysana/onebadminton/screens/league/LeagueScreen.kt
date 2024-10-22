@@ -27,6 +27,7 @@ import com.mightysana.onebadminton.composable.BackTextTopBar
 import com.mightysana.onebadminton.composable.BottomNavBar
 import com.mightysana.onebadminton.composable.BottomNavBarItem
 import com.mightysana.onebadminton.navigateAndPopUp
+import com.mightysana.onebadminton.screens.league.matches_screen.MatchesScreen
 import com.mightysana.onebadminton.screens.league.player_screen.PlayerScreen
 
 @Composable
@@ -83,8 +84,10 @@ fun LeagueScreen(
             ) { viewModel.setSelectedTab(it) }
         },
         floatingActionButton = {
-            AnimatedVisibility(selectedTab == 2) {
-                AddFloatingActionButton { viewModel.showAddPlayerDialog() }
+            AnimatedVisibility(selectedTab in listOf(0, 2)) {
+                if(selectedTab == 0 && league.players.size >= 4)
+                    AddFloatingActionButton { viewModel.showAddMatchDialog() }
+                else AddFloatingActionButton { viewModel.showAddPlayerDialog() }
             }
         }
     ) { paddingValues ->
@@ -94,7 +97,10 @@ fun LeagueScreen(
             modifier = Modifier.padding(paddingValues)
         ) {
             composable(matchesRoute) {
-                MatchesScreen(league = league) {
+                MatchesScreen(
+                    viewModel = viewModel,
+                    onDismissDialog = { viewModel.dismissAddMatchDialog() },
+                ) {
                     viewModel.setSelectedTab(2)
                     contentController.navigateAndPopUp(playerRoute, matchesRoute)
                 }
@@ -107,12 +113,11 @@ fun LeagueScreen(
             }
             composable(playerRoute) {
                 PlayerScreen(
-                    league = league,
                     viewModel = viewModel,
                     onDismissDialog = { viewModel.dismissAddPlayerDialog() },
                     onAddPlayer = { viewModel.showAddPlayerDialog() },
                     onRandomize = {
-                        viewModel.generateMatches(league.players)
+                        viewModel.generateMatches()
                         viewModel.setSelectedTab(0)
                         contentController.navigateAndPopUp(matchesRoute, playerRoute)
                     }

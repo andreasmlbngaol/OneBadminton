@@ -74,7 +74,7 @@ fun HomeScreen(
         }
     ) { padding ->
         LazyColumn(
-            modifier = Modifier.padding(padding).fillMaxSize(),
+            modifier = if(leagues.isEmpty()) Modifier.padding(padding).fillMaxSize() else Modifier.padding(padding).fillMaxWidth(),
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {

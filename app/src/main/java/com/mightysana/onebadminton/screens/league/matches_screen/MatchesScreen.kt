@@ -1,5 +1,6 @@
-package com.mightysana.onebadminton.screens.league
+package com.mightysana.onebadminton.screens.league.matches_screen
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,19 +10,29 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
-import com.mightysana.onebadminton.properties.League
+import com.mightysana.onebadminton.composable.AddMatchDialog
+import com.mightysana.onebadminton.screens.league.LeagueViewModel
+import com.mightysana.onebadminton.screens.league.MatchFormValidationResult
+import com.mightysana.onebadminton.toastMessage
 
 @Composable
 fun MatchesScreen(
-    league: League,
+    viewModel: LeagueViewModel,
+    onDismissDialog: () -> Unit,
     onNavigateToRandom: () -> Unit
 ) {
+    val league by viewModel.league.collectAsState()
     val matches = league.matches
+    val isDialogVisible by viewModel.showAddMatchDialog.collectAsState()
+    val context = LocalContext.current
     if (matches.isEmpty()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -48,4 +59,20 @@ fun MatchesScreen(
             }
         }
     }
+
+    AnimatedVisibility(isDialogVisible) {
+        AddMatchDialog(
+            onDismiss = onDismissDialog,
+            viewModel = viewModel
+        ) {
+//            when (viewModel.validateMatchForm()) {
+//                MatchFormValidationResult.Valid -> {
+//                    viewModel.addPlayer()
+//                    context.toastMessage(R.string.player_added)
+//                }
+//            }
+            context.toastMessage(R.string.save)
+        }
+    }
+
 }

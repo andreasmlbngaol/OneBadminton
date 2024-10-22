@@ -16,6 +16,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.mightysana.onebadminton.isEven
 
 @Composable
 fun Table(
@@ -47,7 +48,7 @@ fun Table(
         var it = 0
         items(data) { rowData ->
             Row(
-                modifier = Modifier.fillMaxWidth().background(if(it % 2 == 0) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)),
+                modifier = Modifier.fillMaxWidth().background(if(it.isEven()) MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f) else MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.7f)),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {

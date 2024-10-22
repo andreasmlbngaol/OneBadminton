@@ -1,6 +1,5 @@
 package com.mightysana.onebadminton.screens.league
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mightysana.onebadminton.isOdd
@@ -28,11 +27,49 @@ class LeagueViewModel @Inject constructor(
     private val _showAddPlayerDialog = MutableStateFlow(false)
     val showAddPlayerDialog: StateFlow<Boolean> = _showAddPlayerDialog
 
+    private val _showAddMatchDialog = MutableStateFlow(false)
+    val showAddMatchDialog: StateFlow<Boolean> = _showAddMatchDialog
+
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
 
     private val _initial = MutableStateFlow("")
     val initial: StateFlow<String> = _initial
+
+    private val _player1 = MutableStateFlow<Player?>(null)
+    val player1: StateFlow<Player?> = _player1
+
+    private val _player2 = MutableStateFlow<Player?>(null)
+    val player2: StateFlow<Player?> = _player2
+
+    private val _player3 = MutableStateFlow<Player?>(null)
+    val player3: StateFlow<Player?> = _player3
+
+    private val _player4 = MutableStateFlow<Player?>(null)
+    val player4: StateFlow<Player?> = _player4
+
+    fun setPlayer1(player: Player) {
+        _player1.value = player
+    }
+
+    fun setPlayer2(player: Player) {
+        _player2.value = player
+    }
+
+    fun setPlayer3(player: Player) {
+        _player3.value = player
+    }
+
+    fun setPlayer4(player: Player) {
+        _player4.value = player
+    }
+
+    fun resetPlayer() {
+        _player1.value = null
+        _player2.value = null
+        _player3.value = null
+        _player4.value = null
+    }
 
     fun setName(name: String) {
         _name.value = name
@@ -71,14 +108,21 @@ class LeagueViewModel @Inject constructor(
         return _initial.value.isBlank()
     }
 
-    fun validateForm(): FormValidationResult {
+    fun validatePlayerForm(): PlayerFormValidationResult {
         return when {
-            isNameBlank() -> FormValidationResult.NameIsBlank
-            !isNameLengthValid() -> FormValidationResult.NameTooLong
-            isInitialBlank() -> FormValidationResult.InitialIsBlank
-            !isInitialLengthValid() -> FormValidationResult.InitialTooLong
-            else -> FormValidationResult.Valid
+            isNameBlank() -> PlayerFormValidationResult.NameIsBlank
+            !isNameLengthValid() -> PlayerFormValidationResult.NameTooLong
+            isInitialBlank() -> PlayerFormValidationResult.InitialIsBlank
+            !isInitialLengthValid() -> PlayerFormValidationResult.InitialTooLong
+            else -> PlayerFormValidationResult.Valid
         }
+    }
+
+    fun validateMatchForm(): MatchFormValidationResult {
+//        return when {
+//            else -> MatchFormValidationResult.Valid
+//        }
+        return MatchFormValidationResult.Valid
     }
 
     private fun setShowAddPlayerDialog(show: Boolean) {
@@ -91,6 +135,20 @@ class LeagueViewModel @Inject constructor(
 
     fun dismissAddPlayerDialog() {
         setShowAddPlayerDialog(false)
+        resetNameAndInitial()
+    }
+
+    private fun setShowAddMatchDialog(show: Boolean) {
+        _showAddMatchDialog.value = show
+    }
+
+    fun showAddMatchDialog() {
+        setShowAddMatchDialog(true)
+    }
+
+    fun dismissAddMatchDialog() {
+        setShowAddMatchDialog(false)
+        resetPlayer()
     }
 
     fun setSelectedTab(tab: Int) {
@@ -102,8 +160,12 @@ class LeagueViewModel @Inject constructor(
         _league.value = _league.value.copy(players = _league.value.players.filterNotNull())
     }
 
-    fun addPlayer(name: String, initial: String, leagueId: Int) {
+    fun addPlayer() {
         viewModelScope.launch {
+            val leagueId = _league.value.id
+            val name = _name.value
+            val initial = _initial.value
+
             val lastPlayer = repository.getLastPlayer(leagueId)
             val newId = if(lastPlayer != null) lastPlayer.id + 1 else 1
             val newPlayer = Player(newId, name, initial)
@@ -119,7 +181,7 @@ class LeagueViewModel @Inject constructor(
         val doubles = mutableListOf<Doubles>()
 
         if(playersCount.isOdd()) {
-            val playerToPlayTwice = shuffledPlayers.random()
+            val playerToPlayTwice = shuffledPlayers.first()
             shuffledPlayers.add(playerToPlayTwice)
         }
 
@@ -131,55 +193,120 @@ class LeagueViewModel @Inject constructor(
         return doubles
     }
 
-    fun generateMatches(players: List<Player>) {
+    fun generateMatches() {
         viewModelScope.launch {
+            val players = _league.value.players
             val doubles = randomizeDouble(players)
             val shuffledDoubles = doubles.shuffled().toMutableList()
             val doublesCount = shuffledDoubles.size
             val matches = mutableListOf<Match>()
 
+            val playerPlayingTwice: Player? = if (players.size.isOdd()) {
+                shuffledDoubles.find { double ->
+                    double.player1 == double.player2
+                }?.player1
+            } else {
+                null
+            }
+
             if (doublesCount.isOdd()) {
                 val enemies = shuffledDoubles.indices.associateWith { 0 }.toMutableMap()
                 var i = 0
-//                while(shuffledDoubles.isNotEmpty()) {
-                while(i < doublesCount) {
+                while (i < doublesCount) {
                     val double1 = shuffledDoubles[i]
                     var double2: Doubles
                     var j = i
-                    while(enemies[i]!! < 2) {
+                    while (enemies[i]!! < 2) {
                         j++
-                        if(enemies[j] == 0 || i == doublesCount - 2) {
+                        if (j >= shuffledDoubles.size) break // Menghindari index out of bounds
+                        if (enemies[j] == 0 || i == doublesCount - 2) {
                             double2 = shuffledDoubles[j]
-                            if(enemies[i] == 0) {
-                                matches.add(Match(double1, double2))
-                            } else {
-                                matches.add(Match(double2, double1))
-                            }
-                            enemies[i] = enemies[i]!! + 1
-                            enemies[j] = enemies[j]!! + 1
+                        } else {
+                            continue
                         }
+
+                        // Pastikan tidak ada pemain yang melawan dirinya sendiri
+                        if (playerPlayingTwice != null &&
+                            (double1.player1 == playerPlayingTwice || double1.player2 == playerPlayingTwice) &&
+                            (double2.player1 == playerPlayingTwice || double2.player2 == playerPlayingTwice)
+                        ) {
+                            continue // Lewati jika pemain akan melawan dirinya sendiri
+                        }
+
+                        if (enemies[i] == 0) {
+                            matches.add(Match(double1, double2))
+                        } else {
+                            matches.add(Match(double2, double1))
+                        }
+
+                        enemies[i] = enemies[i]!! + 1
+                        enemies[j] = enemies[j]!! + 1
                     }
-                    Log.d("LeagueViewModel", "enemies: $enemies")
-//                    shuffledDoubles.removeAt(i)
                     i++
                 }
             } else {
                 while (shuffledDoubles.isNotEmpty()) {
-                    val doubles1 = shuffledDoubles.removeFirst()
-                    val doubles2 = shuffledDoubles.removeFirst()
-                    matches.add(Match(doubles1, doubles2))
+                    val doubles1 = shuffledDoubles.first()
+                    val doubles2 = shuffledDoubles.elementAtOrNull(1)
+
+                    if (doubles2 != null) {
+                        // Pastikan tidak ada pemain yang melawan dirinya sendiri
+                        if (playerPlayingTwice != null &&
+                            (doubles1.player1 == playerPlayingTwice || doubles1.player2 == playerPlayingTwice) &&
+                            (doubles2.player1 == playerPlayingTwice || doubles2.player2 == playerPlayingTwice)
+                        ) {
+                            shuffledDoubles.shuffle() // Acak ulang jika ada masalah
+                            continue
+                        }
+
+                        shuffledDoubles.removeFirst()
+                        shuffledDoubles.removeFirst()
+                        matches.add(Match(doubles1, doubles2))
+                    }
                 }
             }
+
+            while (!validateMatchSequence(matches)) {
+                matches.shuffle()
+            }
+
             fetchLeague(_league.value.id)
-            Log.d("LeagueViewModel", "Generated matches: $matches")
         }
+    }
+
+    private fun validateMatchSequence(matches: List<Match>): Boolean {
+        for(i in 1 until matches.size) {
+            val prevMatch = matches[i-1]
+            val currentMatch = matches[i]
+
+            if(matchHasSamePlayer(prevMatch, currentMatch)) {
+                return false
+            }
+        }
+        return true
+    }
+
+    private fun matchHasSamePlayer(match1: Match, match2: Match): Boolean {
+        val match1Double = listOf(
+            match1.doubles1,
+            match1.doubles2,
+        )
+        val match2Double = listOf(
+            match2.doubles1,
+            match2.doubles2,
+        )
+        return match1Double.any { it in match2Double }
     }
 }
 
-sealed class FormValidationResult {
-    data object Valid : FormValidationResult()
-    data object NameTooLong : FormValidationResult()
-    data object NameIsBlank : FormValidationResult()
-    data object InitialTooLong : FormValidationResult()
-    data object InitialIsBlank : FormValidationResult()
+sealed class PlayerFormValidationResult {
+    data object Valid : PlayerFormValidationResult()
+    data object NameTooLong : PlayerFormValidationResult()
+    data object NameIsBlank : PlayerFormValidationResult()
+    data object InitialTooLong : PlayerFormValidationResult()
+    data object InitialIsBlank : PlayerFormValidationResult()
+}
+
+sealed class MatchFormValidationResult {
+    data object Valid : MatchFormValidationResult()
 }
