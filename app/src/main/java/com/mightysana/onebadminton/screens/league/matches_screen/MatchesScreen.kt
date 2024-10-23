@@ -21,11 +21,9 @@ import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.composable.AddMatchDialog
 import com.mightysana.onebadminton.composable.MatchCard
-import com.mightysana.onebadminton.screens.league.FINISHED
 import com.mightysana.onebadminton.screens.league.LeagueViewModel
 import com.mightysana.onebadminton.screens.league.MatchFormValidationResult
 import com.mightysana.onebadminton.screens.league.SCHEDULED
-import com.mightysana.onebadminton.screens.league.STARTED
 import com.mightysana.onebadminton.toastMessage
 
 @Composable
@@ -56,12 +54,12 @@ fun MatchesScreen(
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             items(matches) { match ->
+                val matchId = match.id
                 MatchCard(
                     viewModel = viewModel,
                     match = match
                 ) {
-                    val newStatus = if(match.status == SCHEDULED) STARTED else FINISHED
-                    viewModel.setMatchStatus(match.id, newStatus)
+                    if(match.status == SCHEDULED) { viewModel.startMatch(matchId) } else { viewModel.finishMatch(matchId) }
                 }
                 val player1 = match.doubles1.player1.name
                 val player2 = match.doubles1.player2.name

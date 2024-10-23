@@ -1,5 +1,6 @@
 package com.mightysana.onebadminton.screens.league
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mightysana.onebadminton.isNull
@@ -48,6 +49,14 @@ class LeagueViewModel @Inject constructor(
 
     private val _player4 = MutableStateFlow<Player?>(null)
     val player4: StateFlow<Player?> = _player4
+
+    fun observeLeague(id: Int) {
+        Log.d("LeagueViewModel", "Observing league with ID: $id")
+
+        repository.observeLeague(id) { leagueData ->
+            _league.value = leagueData
+        }
+    }
 
     fun setPlayer1(player: Player) {
         _player1.value = player
@@ -173,44 +182,37 @@ class LeagueViewModel @Inject constructor(
     }
 
     fun setSelectedTab(tab: Int) {
-        _selectedTab.value = tab
-    }
-
-    suspend fun fetchLeague(id: Int) {
-        _league.value = repository.getLeague(id)
-        _league.value = _league.value.copy(
-            players = _league.value.players.filterNotNull(),
-            matches = _league.value.matches.filterNotNull()
-        )
+        if (_selectedTab.value != tab) {
+            _selectedTab.value = tab
+        }
     }
 
     fun addPlayer() {
         viewModelScope.launch {
-            val leagueId = _league.value.id
             val name = _name.value
             val initial = _initial.value
 
+            val leagueId = _league.value.id
             val lastPlayer = repository.getLastPlayer(leagueId)
-            val newId = if(lastPlayer != null) lastPlayer.id + 1 else 1
+            val newId = if(lastPlayer != null) lastPlayer.id + 1 else 0
             val newPlayer = Player(newId, name, initial)
             resetNameAndInitial()
             repository.addPlayer(newPlayer, leagueId)
-            fetchLeague(leagueId)
         }
     }
 
     fun addMatch() {
         viewModelScope.launch {
-            val leagueId = _league.value.id
             val doubles1 = Doubles(_player1.value!!, _player2.value!!)
             val doubles2 = Doubles(_player3.value!!, _player4.value!!)
+
+            val leagueId = _league.value.id
 
             val lastMatch = repository.getLastMatch(leagueId)
             val newId = if(lastMatch != null) lastMatch.id + 1 else 1
             val newMatch = Match(newId, doubles1, doubles2)
             resetPlayer()
             repository.addMatch(newMatch, leagueId)
-            fetchLeague(leagueId)
             dismissAddMatchDialog()
         }
     }
@@ -316,8 +318,6 @@ class LeagueViewModel @Inject constructor(
             while (!validateMatchSequence(matches)) {
                 matches.shuffle()
             }
-
-            fetchLeague(_league.value.id)
         }
     }
 
@@ -345,12 +345,30 @@ class LeagueViewModel @Inject constructor(
         return match1Double.any { it in match2Double }
     }
 
-    fun setMatchStatus(matchId: Int, newStatus: String) {
+    private fun timeNow(): Long {
+        return System.currentTimeMillis()
+    }
+
+    private fun updateMatchStatus(
+        matchId: Int,
+        newStatus: String,
+        newTimeStart: Long? = null,
+        newTimeFinish: Long? = null
+    ) {
         viewModelScope.launch {
             val leagueId = _league.value.id
             repository.setMatchStatus(leagueId, matchId, newStatus)
-            fetchLeague(_league.value.id)
+            newTimeStart?.let { repository.setMatchTimeStart(leagueId, matchId, it) }
+            newTimeFinish?.let { repository.setMatchTimeStart(leagueId, matchId, it) }
         }
+    }
+
+    fun startMatch(matchId: Int) {
+        updateMatchStatus(matchId, STARTED, newTimeStart = timeNow())
+    }
+
+    fun finishMatch(matchId: Int) {
+        updateMatchStatus(matchId, FINISHED, newTimeFinish = timeNow())
     }
 }
 
@@ -368,6 +386,6 @@ sealed class MatchFormValidationResult {
     data object PlayerDuplicate : MatchFormValidationResult()
 }
 
-val SCHEDULED = "SCHEDULED"
-val STARTED = "STARTED"
-val FINISHED = "FINISHED"
+val SCHEDULED = "scheduled"
+val STARTED = "started"
+val FINISHED = "finished"

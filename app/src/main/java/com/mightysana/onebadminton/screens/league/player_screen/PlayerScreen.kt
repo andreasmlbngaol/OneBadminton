@@ -1,5 +1,6 @@
 package com.mightysana.onebadminton.screens.league.player_screen
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,7 +39,7 @@ fun PlayerScreen(
     val context = LocalContext.current
     val league by viewModel.league.collectAsState()
     val isDialogVisible by viewModel.showAddPlayerDialog.collectAsState()
-    val leagueId = league.id
+    Log.d("PlayerScreen", "players: ${league.players}")
     val players = league.players.sortedBy { it.name }
     val isPlayerEmpty = players.isEmpty()
 

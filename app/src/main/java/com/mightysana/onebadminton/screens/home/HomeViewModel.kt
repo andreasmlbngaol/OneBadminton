@@ -42,21 +42,22 @@ class HomeViewModel @Inject constructor(
 
     init {
         Log.d("HomeViewModel", "init called")  // Debug log
-        fetchLeagues()
+//        fetchLeagues()
+        observeLeagues()
+    }
+
+    private fun observeLeagues() {
+        repository.observeLeagues { leaguesData ->
+            _leagues.value = leaguesData.toMap() // Update _leagues dengan data terbaru
+        }
     }
 
     private fun fetchLeagues() {
-        Log.d("HomeViewModel", "fetchLeagues called")  // Debug log
         viewModelScope.launch {
-            Log.d("HomeViewModel", "Fetching leagues...")  // Debug log
             try {
-                Log.d("HomeViewModel", "Fetching leagues from repository...")  // Debug log
                 val leaguesData = repository.getLeagues()
-                Log.d("HomeViewModel", "Leagues data: $leaguesData")  // Log hasil data dari repository
                 _leagues.value = leaguesData.toMap()
-                Log.d("HomeViewModel", "Leagues fetched: ${_leagues.value}")  // Debug log
             } catch (e: Exception) {
-                Log.e("HomeViewModel", "Error fetching leagues", e)  // Error log
                 e.printStackTrace()
             }
         }
@@ -67,6 +68,7 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val lastLeague = repository.getLastLeague()
             val newId = if(lastLeague != null) lastLeague.id + 1 else 1
+
             val newLeague = League(newId, name)
             repository.addLeague(newLeague)
            fetchLeagues()

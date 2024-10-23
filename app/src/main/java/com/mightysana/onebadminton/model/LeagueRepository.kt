@@ -2,7 +2,10 @@ package com.mightysana.onebadminton.model
 
 import android.util.Log
 import com.google.firebase.Firebase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.database
 import com.mightysana.onebadminton.properties.League
 import com.mightysana.onebadminton.properties.Match
@@ -29,10 +32,42 @@ class LeagueRepository @Inject constructor() {
         }
     }
 
+    fun observeLeagues(onUpdate: (List<Pair<Int, League>>) -> Unit) {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                // Konversi data snapshot menjadi List<Pair<Int, League>>
+                val leaguesData = dataSnapshot.children.mapNotNull { leagueSnapshot ->
+                    val league = leagueSnapshot.getValue(League::class.java)
+                    league?.let { Pair(leagueSnapshot.key!!.toInt(), it) } // Menggunakan key sebagai ID
+                }
+                onUpdate(leaguesData) // Memanggil callback dengan data terbaru
+            }
+
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("LeagueRepository", "Error fetching leagues: ${databaseError.message}")
+            }
+        })
+    }
+
+    fun observeLeague(leagueId: Int, onUpdate: (League) -> Unit) {
+        database.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(dataSnapshot: DataSnapshot) {
+                val league = dataSnapshot.child(leagueId.toString()).getValue(League::class.java)
+                league?.let {
+                    onUpdate(it)
+                    Log.d("LeagueViewModel", "League updated: $it")
+                }
+            }
+            override fun onCancelled(databaseError: DatabaseError) {
+                Log.e("LeagueRepository", "Error fetching leagues: ${databaseError.message}")
+            }
+        })
+    }
+
+
     suspend fun getLastLeague(): League? {
         val leagues = getLeagues()
         return leagues.maxByOrNull { it.first }?.second
-
     }
 
     suspend fun addLeague(league: League) {
@@ -90,5 +125,10 @@ class LeagueRepository @Inject constructor() {
     suspend fun setMatchStatus(leagueId: Int, matchId: Int, newStatus: String) {
         database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("status").setValue(newStatus).await()
     }
+
+    suspend fun setMatchTimeStart(leagueId: Int, matchId: Int, time: Long) {
+        database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("timeStart").setValue(time).await()
+    }
+
 
 }

@@ -7,7 +7,7 @@ data class Match(
     val score1: Int = 0,
     val score2: Int = 0,
     var status: String = "SCHEDULED",
-    val timeStart: String = "",
-    val timeFinish: String = "",
+    val timeStart: Long = 0L,
+    val timeFinish: Long = 0L,
     val matchDuration: Int = 0
 )

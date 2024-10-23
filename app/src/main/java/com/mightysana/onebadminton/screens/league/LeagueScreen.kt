@@ -37,7 +37,7 @@ fun LeagueScreen(
     viewModel: LeagueViewModel = hiltViewModel()
 ) {
     LaunchedEffect(leagueId) {
-        viewModel.fetchLeague(leagueId)
+        viewModel.observeLeague(leagueId)
     }
 
     val league by viewModel.league.collectAsState()
@@ -87,7 +87,7 @@ fun LeagueScreen(
             AnimatedVisibility(selectedTab in listOf(0, 2)) {
                 if(selectedTab == 0 && league.players.size >= 4)
                     AddFloatingActionButton { viewModel.showAddMatchDialog() }
-                else AddFloatingActionButton { viewModel.showAddPlayerDialog() }
+                else if(selectedTab == 2) AddFloatingActionButton { viewModel.showAddPlayerDialog() }
             }
         }
     ) { paddingValues ->
