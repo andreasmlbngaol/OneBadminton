@@ -40,7 +40,7 @@ fun PlayerScreen(
     val league by viewModel.league.collectAsState()
     val isDialogVisible by viewModel.showAddPlayerDialog.collectAsState()
     Log.d("PlayerScreen", "players: ${league.players}")
-    val players = league.players.sortedBy { it.name }
+    val players = league.players.filterNotNull().sortedBy { it.name }
     val isPlayerEmpty = players.isEmpty()
 
     Column(

@@ -5,9 +5,13 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -17,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.composable.AddMatchDialog
@@ -24,6 +29,7 @@ import com.mightysana.onebadminton.composable.MatchCard
 import com.mightysana.onebadminton.screens.league.LeagueViewModel
 import com.mightysana.onebadminton.screens.league.MatchFormValidationResult
 import com.mightysana.onebadminton.screens.league.SCHEDULED
+import com.mightysana.onebadminton.screens.league.STARTED
 import com.mightysana.onebadminton.toastMessage
 
 @Composable
@@ -33,7 +39,13 @@ fun MatchesScreen(
     onNavigateToRandom: () -> Unit
 ) {
     val league by viewModel.league.collectAsState()
-    val matches = league.matches
+    val matches = league.matches.filterNotNull().sortedBy {
+        when(it.status) {
+            STARTED -> 1
+            SCHEDULED -> 2
+            else -> 3
+        }
+    }
     val isDialogVisible by viewModel.showAddMatchDialog.collectAsState()
     val context = LocalContext.current
     if (matches.isEmpty()) {
@@ -51,21 +63,18 @@ fun MatchesScreen(
         }
     } else {
         LazyColumn(
-            modifier = Modifier.padding(horizontal = 8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             items(matches) { match ->
                 val matchId = match.id
                 MatchCard(
+                    modifier = Modifier.fillMaxWidth(0.9f),
                     viewModel = viewModel,
-                    match = match
-                ) {
-                    if(match.status == SCHEDULED) { viewModel.startMatch(matchId) } else { viewModel.finishMatch(matchId) }
-                }
-                val player1 = match.doubles1.player1.name
-                val player2 = match.doubles1.player2.name
-                val player3 = match.doubles2.player1.name
-                val player4 = match.doubles2.player2.name
-                Text("$player1 & $player2 vs $player3 & $player4")
+                    match = match,
+                    onClick = { if(match.status == SCHEDULED) { viewModel.startMatch(matchId) } else { viewModel.finishMatch(matchId) } }
+                )
             }
         }
     }

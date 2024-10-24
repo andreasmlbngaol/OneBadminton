@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
@@ -35,7 +36,7 @@ fun OneDropdownMenu(
     }
 
     DropdownMenu(
-        modifier = modifier.clip(MaterialTheme.shapes.large).fillMaxWidth().fillMaxHeight(0.5f),
+        modifier = modifier.clip(MaterialTheme.shapes.large).fillMaxWidth().heightIn(max = 350.dp),
         expanded = expanded,
         onDismissRequest = onDismiss,
     ) {

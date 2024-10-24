@@ -2,6 +2,8 @@ package com.mightysana.onebadminton
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.pager.PageSize
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -9,6 +11,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Density
+import com.mightysana.onebadminton.composable.MatchCard
+import com.mightysana.onebadminton.screens.league.SCHEDULED
 
 // ------------ MODAL BOTTOM SHEET ------------
 //    ModalBottomSheet(
@@ -107,3 +112,29 @@ import androidx.compose.ui.res.stringResource
 //    }
 //}
 //)
+
+// --------------- PAGER ---------
+//val pagerState = rememberPagerState(pageCount = { matches.size })
+//val threePagesPerViewport = object : PageSize {
+//    override fun Density.calculateMainAxisPageSize(
+//        availableSpace: Int,
+//        pageSpacing: Int
+//    ): Int {
+//        return (availableSpace - 2 * pageSpacing) / 3
+//    }
+//}
+//VerticalPager(
+//modifier = Modifier.fillMaxWidth(),
+//pageSpacing = 16.dp,
+//state = pagerState,
+//pageSize = threePagesPerViewport
+//) { page ->
+//    val matchId = matches[page].id
+//    MatchCard(
+//        modifier = Modifier.fillMaxWidth(0.9f),
+//        viewModel = viewModel,
+//        match = matches[page],
+//        onClick = { if(matches[page].status == SCHEDULED) { viewModel.startMatch(matchId) } else { viewModel.finishMatch(matchId) } }
+//    )
+//}
+//

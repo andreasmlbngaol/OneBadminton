@@ -126,8 +126,15 @@ class LeagueRepository @Inject constructor() {
         database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("status").setValue(newStatus).await()
     }
 
-    suspend fun setMatchTimeStart(leagueId: Int, matchId: Int, time: Long) {
+    suspend fun startMatch(leagueId: Int, matchId: Int, time: Long) {
         database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("timeStart").setValue(time).await()
+    }
+
+    suspend fun finishMatch(leagueId: Int, matchId: Int, timeFinish: Long) {
+        database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("timeFinish").setValue(timeFinish).await()
+        val timeStart = database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("timeStart").get().await().getValue(Long::class.java)
+        val matchDuration = timeFinish - timeStart!!
+        database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("durationInMillis").setValue(matchDuration).await()
     }
 
 

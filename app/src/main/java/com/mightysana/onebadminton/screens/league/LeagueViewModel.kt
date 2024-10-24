@@ -209,7 +209,7 @@ class LeagueViewModel @Inject constructor(
             val leagueId = _league.value.id
 
             val lastMatch = repository.getLastMatch(leagueId)
-            val newId = if(lastMatch != null) lastMatch.id + 1 else 1
+            val newId = if(lastMatch != null) lastMatch.id + 1 else 0
             val newMatch = Match(newId, doubles1, doubles2)
             resetPlayer()
             repository.addMatch(newMatch, leagueId)
@@ -358,8 +358,8 @@ class LeagueViewModel @Inject constructor(
         viewModelScope.launch {
             val leagueId = _league.value.id
             repository.setMatchStatus(leagueId, matchId, newStatus)
-            newTimeStart?.let { repository.setMatchTimeStart(leagueId, matchId, it) }
-            newTimeFinish?.let { repository.setMatchTimeStart(leagueId, matchId, it) }
+            newTimeStart?.let { repository.startMatch(leagueId, matchId, it) }
+            newTimeFinish?.let { repository.finishMatch(leagueId, matchId, it) }
         }
     }
 
