@@ -99,11 +99,11 @@ fun LeagueScreen(
             composable(matchesRoute) {
                 MatchesScreen(
                     viewModel = viewModel,
-                    onDismissDialog = { viewModel.dismissAddMatchDialog() },
-                ) {
-                    viewModel.setSelectedTab(2)
-                    contentController.navigateAndPopUp(playerRoute, matchesRoute)
-                }
+                    onNavigateToRandom = {
+                        viewModel.setSelectedTab(2)
+                        contentController.navigateAndPopUp(playerRoute, matchesRoute)
+                    }
+                )
             }
             composable(leaderboardRoute) {
                  LeaderboardScreen(players = league.players) {

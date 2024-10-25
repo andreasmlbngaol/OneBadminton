@@ -5,16 +5,19 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mightysana.onebadminton.isNull
 import com.mightysana.onebadminton.isOdd
+import com.mightysana.onebadminton.loss
 import com.mightysana.onebadminton.model.LeagueRepository
 import com.mightysana.onebadminton.properties.Doubles
 import com.mightysana.onebadminton.properties.League
 import com.mightysana.onebadminton.properties.Match
 import com.mightysana.onebadminton.properties.Player
+import com.mightysana.onebadminton.win
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.math.abs
 
 @HiltViewModel
 class LeagueViewModel @Inject constructor(
@@ -29,8 +32,11 @@ class LeagueViewModel @Inject constructor(
     private val _showAddPlayerDialog = MutableStateFlow(false)
     val showAddPlayerDialog: StateFlow<Boolean> = _showAddPlayerDialog
 
-    private val _showAddMatchDialog = MutableStateFlow(false)
-    val showAddMatchDialog: StateFlow<Boolean> = _showAddMatchDialog
+    private val _isAddMatchDialogVisible = MutableStateFlow(false)
+    val isAddMatchDialogVisible: StateFlow<Boolean> = _isAddMatchDialogVisible
+
+    private val _isFinishMatchDialogVisible = MutableStateFlow(false)
+    val isFinishMatchDialogVisible: StateFlow<Boolean> = _isFinishMatchDialogVisible
 
     private val _name = MutableStateFlow("")
     val name: StateFlow<String> = _name
@@ -49,6 +55,13 @@ class LeagueViewModel @Inject constructor(
 
     private val _player4 = MutableStateFlow<Player?>(null)
     val player4: StateFlow<Player?> = _player4
+
+    private val _finishedMatchId = MutableStateFlow(0)
+    val finishedMatchId: StateFlow<Int> = _finishedMatchId
+
+    fun setFinishedMatchId(id: Int) {
+        _finishedMatchId.value = id
+    }
 
     fun observeLeague(id: Int) {
         Log.d("LeagueViewModel", "Observing league with ID: $id")
@@ -155,6 +168,41 @@ class LeagueViewModel @Inject constructor(
         }
     }
 
+    private fun scoreInvalid(matchId: Int): Boolean {
+        val leagueRules = _league.value.rules
+        val gamePoint = leagueRules.gamePoint
+        val match = _league.value.matches[matchId]
+        val score1 = match.score1
+        val score2 = match.score2
+
+        if(leagueRules.isDeuceEnabled) {
+            if(score1 > gamePoint || score2 > gamePoint) {
+                return abs(score1 - score2) != 2
+            }
+            if(score1 == gamePoint || score2 == gamePoint) {
+                return abs(score1 - score2) <= 1
+            }
+        } else {
+            if(score1 > gamePoint || score2 > gamePoint) {
+                return true
+            }
+            if(score1 == score2) {
+                return true
+            }
+        }
+        if(score1 != gamePoint && score2 != gamePoint) {
+            return true
+        }
+        return false
+    }
+
+    fun validateMatchScore(): MatchScoreValidationResult {
+        return when {
+            scoreInvalid(_finishedMatchId.value!!) -> MatchScoreValidationResult.Invalid
+            else -> MatchScoreValidationResult.Valid
+        }
+    }
+
     private fun setShowAddPlayerDialog(show: Boolean) {
         _showAddPlayerDialog.value = show
     }
@@ -169,16 +217,66 @@ class LeagueViewModel @Inject constructor(
     }
 
     private fun setShowAddMatchDialog(show: Boolean) {
-        _showAddMatchDialog.value = show
+        _isAddMatchDialogVisible.value = show
     }
+
+    private fun setShowFinishMatchDialog(show: Boolean) {
+        _isFinishMatchDialogVisible.value = show
+    }
+
+    fun addScore1(matchId: Int) {
+        viewModelScope.launch {
+            val prevScore = _league.value.matches[matchId].score1
+            val newScore = prevScore + 1
+            val leagueId = _league.value.id
+            repository.addScore1(leagueId, matchId, newScore)
+        }
+    }
+
+    fun removeScore1(matchId: Int) {
+        viewModelScope.launch {
+            val prevScore = _league.value.matches[matchId].score1
+            val newScore = if (prevScore > 0) prevScore - 1 else 0
+            val leagueId = _league.value.id
+            repository.removeScore1(leagueId, matchId, newScore)
+        }
+    }
+
+    fun addScore2(matchId: Int) {
+        viewModelScope.launch {
+            val prevScore = _league.value.matches[matchId].score2
+            val newScore = prevScore + 1
+            val leagueId = _league.value.id
+            repository.addScore2(leagueId, matchId, newScore)
+        }
+    }
+
+    fun removeScore2(matchId: Int) {
+        viewModelScope.launch {
+            val prevScore = _league.value.matches[matchId].score2
+            val newScore = if (prevScore > 0) prevScore - 1 else 0
+            val leagueId = _league.value.id
+            repository.removeScore2(leagueId, matchId, newScore)
+        }
+    }
+
 
     fun showAddMatchDialog() {
         setShowAddMatchDialog(true)
     }
 
+    fun showFinishMatchDialog() {
+        setShowFinishMatchDialog(true)
+    }
+
     fun dismissAddMatchDialog() {
         setShowAddMatchDialog(false)
         resetPlayer()
+    }
+
+    fun dismissFinishMatchDialog() {
+        setShowFinishMatchDialog(false)
+//        resetFinishedMatchId()
     }
 
     fun setSelectedTab(tab: Int) {
@@ -201,10 +299,14 @@ class LeagueViewModel @Inject constructor(
         }
     }
 
+    fun getPlayer(playerId: Int): Player {
+        return _league.value.players[playerId]
+    }
+
     fun addMatch() {
         viewModelScope.launch {
-            val doubles1 = Doubles(_player1.value!!, _player2.value!!)
-            val doubles2 = Doubles(_player3.value!!, _player4.value!!)
+            val doubles1 = Doubles(_player1.value!!.id, _player2.value!!.id)
+            val doubles2 = Doubles(_player3.value!!.id, _player4.value!!.id)
 
             val leagueId = _league.value.id
 
@@ -230,7 +332,7 @@ class LeagueViewModel @Inject constructor(
         while (shuffledPlayers.isNotEmpty()) {
             val player1 = shuffledPlayers.removeFirst()
             val player2 = shuffledPlayers.removeFirst()
-            doubles.add(Doubles(player1, player2))
+            doubles.add(Doubles(player1.id, player2.id))
         }
         return doubles
     }
@@ -243,10 +345,10 @@ class LeagueViewModel @Inject constructor(
             val doublesCount = shuffledDoubles.size
             val matches = mutableListOf<Match>()
 
-            val playerPlayingTwice: Player? = if (players.size.isOdd()) {
+            val playerIdPlayingTwice: Int? = if (players.size.isOdd()) {
                 shuffledDoubles.find { double ->
-                    double.player1 == double.player2
-                }?.player1
+                    double.player1Id == double.player2Id
+                }?.player1Id
             } else {
                 null
             }
@@ -272,9 +374,9 @@ class LeagueViewModel @Inject constructor(
                         }
 
                         // Pastikan tidak ada pemain yang melawan dirinya sendiri
-                        if (playerPlayingTwice != null &&
-                            (double1.player1 == playerPlayingTwice || double1.player2 == playerPlayingTwice) &&
-                            (double2.player1 == playerPlayingTwice || double2.player2 == playerPlayingTwice)
+                        if (playerIdPlayingTwice != null &&
+                            (double1.player1Id == playerIdPlayingTwice || double1.player2Id == playerIdPlayingTwice) &&
+                            (double2.player1Id == playerIdPlayingTwice || double2.player2Id == playerIdPlayingTwice)
                         ) {
                             continue // Lewati jika pemain akan melawan dirinya sendiri
                         }
@@ -300,9 +402,9 @@ class LeagueViewModel @Inject constructor(
 
                     if (doubles2 != null) {
                         // Pastikan tidak ada pemain yang melawan dirinya sendiri
-                        if (playerPlayingTwice != null &&
-                            (doubles1.player1 == playerPlayingTwice || doubles1.player2 == playerPlayingTwice) &&
-                            (doubles2.player1 == playerPlayingTwice || doubles2.player2 == playerPlayingTwice)
+                        if (playerIdPlayingTwice != null &&
+                            (doubles1.player1Id == playerIdPlayingTwice || doubles1.player2Id == playerIdPlayingTwice) &&
+                            (doubles2.player1Id == playerIdPlayingTwice || doubles2.player2Id == playerIdPlayingTwice)
                         ) {
                             shuffledDoubles.shuffle() // Acak ulang jika ada masalah
                             continue
@@ -368,7 +470,42 @@ class LeagueViewModel @Inject constructor(
     }
 
     fun finishMatch(matchId: Int) {
+        val players = _league.value.players
+        val match = _league.value.matches[matchId]
+        val score1 = match.score1
+        val score2 = match.score2
+        val player1 = players[match.doubles1.player1Id]
+        val player2 = players[match.doubles1.player2Id]
+        val player3 = players[match.doubles2.player1Id]
+        val player4 = players[match.doubles2.player2Id]
+        val doubles1Id = listOf(player1.id, player2.id)
+        val winner = if(score1 > score2) listOf(player1, player2) else listOf(player3, player4)
+        val loser = if(score1 < score2) listOf(player1, player2) else listOf(player3, player4)
+
+        winner.forEach {
+            val newStats = it.win(
+                if(it.id in doubles1Id) score1 else score2,
+                if(it.id in doubles1Id) score2 else score1
+            )
+            updatePlayer(newStats)
+        }
+        loser.forEach {
+            val newStats = it.loss(
+                if(it.id in doubles1Id) score1 else score2,
+                if(it.id in doubles1Id) score2 else score1
+            )
+            updatePlayer(newStats)
+        }
         updateMatchStatus(matchId, FINISHED, newTimeFinish = timeNow())
+        dismissFinishMatchDialog()
+    }
+
+    private fun updatePlayer(player: Player) {
+        viewModelScope.launch {
+            val leagueId = _league.value.id
+
+            repository.updatePlayer(leagueId, player)
+        }
     }
 }
 
@@ -384,6 +521,11 @@ sealed class MatchFormValidationResult {
     data object Valid : MatchFormValidationResult()
     data object PlayerIsBlank : MatchFormValidationResult()
     data object PlayerDuplicate : MatchFormValidationResult()
+}
+
+sealed class MatchScoreValidationResult {
+    data object Valid : MatchScoreValidationResult()
+    data object Invalid : MatchScoreValidationResult()
 }
 
 val SCHEDULED = "scheduled"

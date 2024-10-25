@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.pager.PageSize
-import androidx.compose.foundation.pager.VerticalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,13 +18,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.mightysana.onebadminton.R
 import com.mightysana.onebadminton.composable.AddMatchDialog
+import com.mightysana.onebadminton.composable.FinishMatchDialog
 import com.mightysana.onebadminton.composable.MatchCard
 import com.mightysana.onebadminton.screens.league.LeagueViewModel
 import com.mightysana.onebadminton.screens.league.MatchFormValidationResult
+import com.mightysana.onebadminton.screens.league.MatchScoreValidationResult
 import com.mightysana.onebadminton.screens.league.SCHEDULED
 import com.mightysana.onebadminton.screens.league.STARTED
 import com.mightysana.onebadminton.toastMessage
@@ -35,7 +33,6 @@ import com.mightysana.onebadminton.toastMessage
 @Composable
 fun MatchesScreen(
     viewModel: LeagueViewModel,
-    onDismissDialog: () -> Unit,
     onNavigateToRandom: () -> Unit
 ) {
     val league by viewModel.league.collectAsState()
@@ -46,7 +43,8 @@ fun MatchesScreen(
             else -> 3
         }
     }
-    val isDialogVisible by viewModel.showAddMatchDialog.collectAsState()
+    val isAddMatchDialogVisible by viewModel.isAddMatchDialogVisible.collectAsState()
+    val isFinishMatchDialogVisible by viewModel.isFinishMatchDialogVisible.collectAsState()
     val context = LocalContext.current
     if (matches.isEmpty()) {
         Column(
@@ -73,32 +71,57 @@ fun MatchesScreen(
                     modifier = Modifier.fillMaxWidth(0.9f),
                     viewModel = viewModel,
                     match = match,
-                    onClick = { if(match.status == SCHEDULED) { viewModel.startMatch(matchId) } else { viewModel.finishMatch(matchId) } }
+                    onButtonClick = {
+                        if(match.status == SCHEDULED) {
+                            viewModel.startMatch(matchId)
+                        } else {
+                            viewModel.setFinishedMatchId(matchId)
+                            when (viewModel.validateMatchScore()) {
+                                MatchScoreValidationResult.Valid -> {
+                                    Log.d("MatchesScreen", "Valid")
+                                    viewModel.showFinishMatchDialog()
+                                }
+                                MatchScoreValidationResult.Invalid -> {
+                                    Log.d("MatchesScreen", "Invalid")
+                                    context.toastMessage(R.string.invalid_score)
+                                }
+                            }
+                        }
+                    }
                 )
             }
         }
+        AnimatedVisibility(isFinishMatchDialogVisible) {
+            val matchId by viewModel.finishedMatchId.collectAsState()
+            FinishMatchDialog(
+                onDismiss = { viewModel.dismissFinishMatchDialog() },
+                viewModel = viewModel,
+                onSave = { viewModel.finishMatch(matchId) }
+            )
+        }
     }
 
-    AnimatedVisibility(isDialogVisible) {
+    AnimatedVisibility(isAddMatchDialogVisible) {
         AddMatchDialog(
-            onDismiss = onDismissDialog,
-            viewModel = viewModel
-        ) {
-            when (viewModel.validateMatchForm()) {
-                MatchFormValidationResult.Valid -> {
-                    viewModel.addMatch()
-                    Log.d("MatchesScreen", "MatchesScreen: ${viewModel.league.value.matches}")
-                    context.toastMessage(R.string.match_added)
-                }
+            onDismiss = { viewModel.dismissAddMatchDialog() },
+            viewModel = viewModel,
+            onSave = {
+                when (viewModel.validateMatchForm()) {
+                    MatchFormValidationResult.Valid -> {
+                        viewModel.addMatch()
+                        Log.d("MatchesScreen", "MatchesScreen: ${viewModel.league.value.matches}")
+                        context.toastMessage(R.string.match_added)
+                    }
 
-                MatchFormValidationResult.PlayerIsBlank -> {
-                    context.toastMessage(R.string.player_is_blank)
-                }
+                    MatchFormValidationResult.PlayerIsBlank -> {
+                        context.toastMessage(R.string.player_is_blank)
+                    }
 
-                MatchFormValidationResult.PlayerDuplicate -> {
-                    context.toastMessage(R.string.player_duplicate)
+                    MatchFormValidationResult.PlayerDuplicate -> {
+                        context.toastMessage(R.string.player_duplicate)
+                    }
                 }
             }
-        }
+        )
     }
 }

@@ -2,9 +2,7 @@ package com.mightysana.onebadminton.screens.home
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,27 +10,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -42,8 +29,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.mightysana.onebadminton.R
+import com.mightysana.onebadminton.composable.AddLeagueDialog
 import com.mightysana.onebadminton.composable.LeagueCard
 import com.mightysana.onebadminton.composable.TextTopBar
+import com.mightysana.onebadminton.isNaturalNumber
+import com.mightysana.onebadminton.toastMessage
 
 @Composable
 fun HomeScreen(
@@ -51,7 +41,7 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val leagues by viewModel.leagues.collectAsState()
-    val isDialogVisible by viewModel.isDialogVisible.collectAsState()
+    val isAddMatchDialogVisible by viewModel.isAddMatchDialogVisible.collectAsState()
 
     Scaffold(
         topBar = {
@@ -94,16 +84,22 @@ fun HomeScreen(
                 }
             }
         }
-        AnimatedVisibility(isDialogVisible) {
-            val errorMessage = stringResource(R.string.league_name_empty)
+        AnimatedVisibility(isAddMatchDialogVisible) {
+            val context = navController.context
             AddLeagueDialog(
                 onDismiss = { viewModel.dismissDialog() },
                 viewModel = viewModel,
-                onSave = { leagueName ->
-                    if(leagueName.isNotBlank()) {
-                        viewModel.addLeague(leagueName)
-                        viewModel.dismissDialog()
-                    } else { Toast.makeText(navController.context, errorMessage, Toast.LENGTH_SHORT).show() }
+                onSave = {
+                    when(viewModel.validateLeagueForm()) {
+                        LeagueFormValidationResult.Valid -> {
+                            viewModel.addLeague()
+                            context.toastMessage(R.string.league_added)
+                        }
+                        LeagueFormValidationResult.NameIsBlank -> { context.toastMessage(R.string.league_name_empty) }
+                        LeagueFormValidationResult.NameTooLong -> { context.toastMessage(R.string.league_name_too_long)}
+                        LeagueFormValidationResult.GamePointIsBlank -> { context.toastMessage(R.string.game_point_is_blank)}
+                        LeagueFormValidationResult.GamePointTooLow -> { context.toastMessage(R.string.game_point_too_low)}
+                    }
                 }
             )
         }

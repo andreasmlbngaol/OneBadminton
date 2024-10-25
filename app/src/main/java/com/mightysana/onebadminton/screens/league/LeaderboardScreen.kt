@@ -86,13 +86,6 @@ fun LeaderboardScreen(
                 )
             }
 
-//            Text(
-//                text = stringResource(R.string.leaderbord),
-//                style = MaterialTheme.typography.titleLarge,
-//                modifier = Modifier.padding(bottom = 8.dp),
-//                textDecoration = TextDecoration.Underline
-//            )
-
             Table(
                 columnName = columns,
                 data = data,

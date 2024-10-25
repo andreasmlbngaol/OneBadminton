@@ -9,11 +9,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -71,7 +76,7 @@ fun MatchCard(
     modifier: Modifier = Modifier,
     viewModel: LeagueViewModel,
     match: Match,
-    onClick: () -> Unit
+    onButtonClick: () -> Unit
 ) {
     val containerColor = if(match.status == SCHEDULED) MaterialTheme.colorScheme.surfaceVariant else (if(match.status == STARTED) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.secondary)
     val contetColor = if(match.status == SCHEDULED) MaterialTheme.colorScheme.onSurfaceVariant else (if(match.status == STARTED) MaterialTheme.colorScheme.onError else MaterialTheme.colorScheme.onSecondary)
@@ -89,8 +94,13 @@ fun MatchCard(
         ) {
             MatchCardTop(match = match)
             HorizontalDivider(Modifier.padding(vertical = 8.dp), color = contetColor)
-            MatchCardContent(match = match)
-            MatchCardBottom(Modifier.padding(horizontal = 16.dp).padding(top = 8.dp), match.status, onClick)
+            MatchCardContent(match = match, viewModel = viewModel)
+            MatchCardBottom(
+                Modifier
+                    .padding(horizontal = 16.dp)
+                    .padding(top = 8.dp), match.status,
+                onButtonClick
+            )
         }
     }
 }
@@ -106,7 +116,7 @@ fun MatchCardTop(
     ) {
         Text(
             modifier = modifier.fillMaxWidth(),
-            text = "Match ${match.id + 1}",
+        text = "${LocalContext.current.getString(R.string.match)} ${match.id + 1}",
             style = MaterialTheme.typography.titleLarge,
             textAlign = TextAlign.Center
         )
@@ -117,11 +127,16 @@ fun MatchCardTop(
 fun MatchCardContent(
     modifier: Modifier = Modifier.padding(horizontal = 16.dp),
     match: Match,
+    viewModel: LeagueViewModel
 ) {
     val status = match.status
     val duration = match.durationInMillis
     val doubles1 = match.doubles1
+    val player1 = viewModel.getPlayer(doubles1.player1Id)
+    val player2 = viewModel.getPlayer(doubles1.player2Id)
     val doubles2 = match.doubles2
+    val player3 = viewModel.getPlayer(doubles2.player1Id)
+    val player4 = viewModel.getPlayer(doubles2.player2Id)
     val score1 = match.score1
     val score2 = match.score2
 
@@ -151,19 +166,21 @@ fun MatchCardContent(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = doubles1.player1.initial,
+                        text = player1.initial,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = doubles1.player2.initial,
+                        text = player2.initial,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                 }
-                Text(
-                    text = score1.toString(),
-                    style = MaterialTheme.typography.headlineSmall
+                ScoreBoard(
+                    score = score1,
+                    onScoreUp = { viewModel.addScore1(match.id) },
+                    onScoreDown = { viewModel.removeScore1(match.id) },
+                    matchStatus = status
                 )
             }
 
@@ -174,14 +191,17 @@ fun MatchCardContent(
                 textAlign = TextAlign.Center
             )
 
+
             Row(
                 modifier = Modifier.weight(0.4f),
                 horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = score2.toString(),
-                    style = MaterialTheme.typography.headlineSmall
+                ScoreBoard(
+                    score = score2,
+                    onScoreUp = { viewModel.addScore2(match.id) },
+                    onScoreDown = { viewModel.removeScore2(match.id) },
+                    matchStatus = status
                 )
 
                 Column(
@@ -189,12 +209,12 @@ fun MatchCardContent(
                     verticalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = doubles2.player1.initial,
+                        text = player3.initial,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = doubles2.player2.initial,
+                        text = player4.initial,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold
                     )
@@ -204,7 +224,48 @@ fun MatchCardContent(
     }
 }
 
+@Composable
+fun ScoreBoard(
+    modifier: Modifier = Modifier,
+    onScoreUp: () -> Unit,
+    onScoreDown: () -> Unit,
+    score: Int,
+    matchStatus: String
+) {
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        if(matchStatus == STARTED) {
+            IconButton(
+                onClick = onScoreUp
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowUp,
+                    contentDescription = null
+                )
+            }
+        }
 
+        Text(
+            text = score.toString(),
+            style = MaterialTheme.typography.headlineSmall
+        )
+
+        if(matchStatus == STARTED) {
+            IconButton(
+                onClick = onScoreDown,
+                enabled = score > 0
+            ) {
+                Icon(
+                    imageVector = Icons.Default.KeyboardArrowDown,
+                    contentDescription = null
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun MatchCardBottom(

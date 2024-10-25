@@ -37,4 +37,16 @@
     <string name="start">Start</string>
     <string name="finish">Finish</string>
     <string name="finished">Finished</string>
+    <string name="invalid_score">Invalid Score!</string>
+    <string name="confirmation">Confirmation</string>
+    <string name="finish_match_message">Are you sure you want to finish Match %1$s?</string>
+    <string name="match">Match</string>
+    <string name="game_point_label" translatable="false">Game Point</string>
+    <string name="isDeuceEnabled" translatable="false">Deuce</string>
+    <string name="league_added">League\'s Added!</string>
+    <string name="league_name_too_long">League name can\\\'t be empty!</string>
+    <string name="game_point_is_blank">Game point cannot be empty!</string>
+    <string name="game_point_too_low">Game point must be greater than 0</string>
+    <string name="on" translatable="false">ON</string>
+    <string name="off" translatable="false">OFF</string>
 </resources>

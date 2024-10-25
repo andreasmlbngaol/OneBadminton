@@ -88,8 +88,7 @@ class LeagueRepository @Inject constructor() {
     }
 
     private suspend fun getMatches(leagueId: Int): List<Pair<Int, Match>> {
-        val snapshot =
-            database.child(leagueId.toString()).child("matches").get().await()  // Ambil snapshot
+        val snapshot = database.child(leagueId.toString()).child("matches").get().await()  // Ambil snapshot
         return snapshot.children.mapNotNull {
             val match = it.getValue(Match::class.java)
             if (match != null) {
@@ -99,6 +98,11 @@ class LeagueRepository @Inject constructor() {
             }
         }
     }
+
+//    suspend fun getPlayer(leagueId: Int, playerId: Int): Player? {
+//        val players = getPlayers(leagueId)
+//        return players.find { it.first == playerId }?.second
+//    }
 
     suspend fun getLastPlayer(leagueId: Int): Player? {
         val players = getPlayers(leagueId)
@@ -137,5 +141,23 @@ class LeagueRepository @Inject constructor() {
         database.child(leagueId.toString()).child("matches").child(matchId.toString()).child("durationInMillis").setValue(matchDuration).await()
     }
 
+    suspend fun addScore1(leagueId: Int, matchId: Int, newScore: Int) {
+        database.child("$leagueId").child("matches").child(matchId.toString()).child("score1").setValue(newScore).await()
+    }
 
+    suspend fun removeScore1(leagueId: Int, matchId: Int, newScore: Int) {
+        database.child("$leagueId").child("matches").child(matchId.toString()).child("score1").setValue(newScore).await()
+    }
+
+    suspend fun addScore2(leagueId: Int, matchId: Int, newScore: Int) {
+        database.child("$leagueId").child("matches").child(matchId.toString()).child("score2").setValue(newScore).await()
+    }
+
+    suspend fun removeScore2(leagueId: Int, matchId: Int, newScore: Int) {
+        database.child("$leagueId").child("matches").child(matchId.toString()).child("score2").setValue(newScore).await()
+    }
+
+    suspend fun updatePlayer(leagueId: Int, player: Player) {
+        database.child("$leagueId").child("players").child(player.id.toString()).setValue(player).await()
+    }
 }

@@ -4,5 +4,6 @@ data class League(
     val id: Int = 0,
     val name: String = "",
     val matches: List<Match> = emptyList(),
-    val players: List<Player> = emptyList()
+    val players: List<Player> = emptyList(),
+    val rules: LeagueRules = LeagueRules()
 )

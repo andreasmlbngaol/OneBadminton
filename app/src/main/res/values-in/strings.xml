@@ -33,4 +33,12 @@
     <string name="start">Mulai</string>
     <string name="finish">Selesai</string>
     <string name="finished">Telah Selesai</string>
+    <string name="invalid_score">Skor Tidak Valid!</string>
+    <string name="confirmation">Konfirmasi</string>
+    <string name="finish_match_message">Apakah kamu yakin ingin menyelesaikan Pertandingan  %1$s?</string>
+    <string name="match">Pertandingan</string>
+    <string name="league_added">Liga Berhasil DItambahkan!</string>
+    <string name="league_name_too_long">Nama Liga tidak boleh kosong!</string>
+    <string name="game_point_is_blank">Game point tidak boleh kosong!</string>
+    <string name="game_point_too_low">Game point harus lebih besar dari 0!</string>
 </resources>
