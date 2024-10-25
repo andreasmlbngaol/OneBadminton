@@ -99,16 +99,16 @@ fun AddLeagueDialog(
                         checked = isDeuceEnabled,
                         onCheckedChange = { viewModel.setDeuceEnabled(it) },
                         colors = SwitchDefaults.colors().copy(
-                            uncheckedThumbColor = MaterialTheme.colorScheme.error,
-                            uncheckedTrackColor = MaterialTheme.colorScheme.errorContainer,
-                            checkedThumbColor = MaterialTheme.colorScheme.primary,
-                            checkedTrackColor = MaterialTheme.colorScheme.primaryContainer
+                            uncheckedThumbColor = MaterialTheme.colorScheme.errorContainer,
+                            uncheckedTrackColor = MaterialTheme.colorScheme.error,
+                            checkedThumbColor = MaterialTheme.colorScheme.primaryContainer,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary
                         ),
                         thumbContent = {
                             Text(
                                 style = MaterialTheme.typography.bodySmall,
                                 text = LocalContext.current.getString(if(isDeuceEnabled) R.string.on else R.string.off),
-                                color = if(!isDeuceEnabled) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.primaryContainer
+                                color = if(!isDeuceEnabled) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
                             )
                         }
                     )
