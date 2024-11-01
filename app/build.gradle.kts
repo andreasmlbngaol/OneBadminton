@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.mightysana.onebadminton"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.mightysana.onebadminton"
